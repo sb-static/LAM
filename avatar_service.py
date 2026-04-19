@@ -388,6 +388,15 @@ def generate_avatar_zip(image_bytes: bytes, original_name: str, work_root: str) 
     ]
     zip_path = os.path.join(work_root, base_name + ".zip")
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        # Write an explicit directory entry for "image/". Some zip parsers
+        # (including JS-side viewers like OpenAvatarChat's gsrenderer) require
+        # the folder to exist as its own entry and fail with "file fold is not
+        # found" if it's missing — python's zipfile.write() doesn't add these
+        # implicitly, so we do it manually here.
+        dir_info = zipfile.ZipInfo("image/")
+        dir_info.external_attr = (0o40755 << 16)  # drwxr-xr-x, directory bit
+        zf.writestr(dir_info, b"")
+ 
         for name in expected_files:
             full = os.path.join(avatar_dir, name)
             if not os.path.exists(full):
