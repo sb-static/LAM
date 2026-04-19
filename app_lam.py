@@ -492,7 +492,7 @@ def demo_lam(flametracking, lam, cfg):
         )
 
         demo.queue()
-        demo.launch()
+        demo.launch(share=True)
 
 
 def _build_model(cfg):
